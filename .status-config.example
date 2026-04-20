@@ -1,3 +1,0 @@
-# Copy to .status-config and set your values (gitignored)
-VM_IP=74.225.27.158
-SSH_KEY=$HOME/Desktop/Mani/ssh-key-2026-03-12.key
