@@ -1,0 +1,384 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Oracle XStream Documentation",
+      "url": "https://docs.oracle.com/en/database/oracle/oracle-database/19/xstrm/",
+      "type": "link",
+      "icon": "doc",
+      "targetBlank": true
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "mode": "markdown",
+        "content": "### Oracle Database Performance - XStream CDC Monitoring\n\n**Prerequisites:** This dashboard requires [oracledb_exporter](https://github.com/iamseth/oracledb_exporter) configured with custom queries for V$STREAMS_CAPTURE, V$ARCHIVED_LOG, and V$LOGMNR_* views. See `monitoring/oracle-exporter/custom-queries.toml` for configuration.\n\n**Setup:** Grant SELECT on DBA_CAPTURE, V$STREAMS_CAPTURE, V$ARCHIVED_LOG, V$LOGMNR_STATS to the exporter user (see `oracle-exporter/grants.sql`). Uncomment the `oracle-exporter` job in `prometheus/prometheus.yml` after the exporter is reachable."
+      },
+      "title": "Setup Instructions",
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "type": "value", "options": { "ENABLED": { "color": "green", "text": "ENABLED" }, "DISABLED": { "color": "red", "text": "DISABLED" }, "ABORTED": { "color": "red", "text": "ABORTED" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 3 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "oracle_xstream_capture_status{job=~\"oracle-exporter\"}",
+          "legendFormat": "{{capture_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream Capture Status",
+      "description": "Status from DBA_CAPTURE view. 1=ENABLED, 0=DISABLED, -1=ABORTED",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 3 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "oracle_xstream_capture_total_messages_captured{job=~\"oracle-exporter\"}",
+          "legendFormat": "{{capture_name}} - total messages",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream - Total Messages Captured",
+      "description": "Cumulative count from V$STREAMS_CAPTURE.TOTAL_MESSAGES_CAPTURED",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "ops",
+          "decimals": 2,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 3 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "rate(oracle_xstream_capture_total_messages_captured{job=~\"oracle-exporter\"}[5m])",
+          "legendFormat": "{{capture_name}} msg/s",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream - Capture Rate (msg/s)",
+      "description": "Rate of messages captured from redo logs",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 11 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "oracle_xstream_capture_scn_scn_current{job=~\"oracle-exporter\"}",
+          "legendFormat": "Current SCN - {{capture_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "oracle_xstream_capture_scn_scn_applied{job=~\"oracle-exporter\"}",
+          "legendFormat": "Applied SCN - {{capture_name}}",
+          "refId": "B"
+        }
+      ],
+      "title": "XStream - SCN Progress",
+      "description": "Current database SCN vs capture applied SCN",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10000 }, { "color": "red", "value": 50000 }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 11 },
+      "id": 6,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "oracle_xstream_capture_scn_scn_current{job=~\"oracle-exporter\"} - oracle_xstream_capture_scn_scn_applied{job=~\"oracle-exporter\"}",
+          "legendFormat": "SCN Lag - {{capture_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream - SCN Lag",
+      "description": "Difference between current DB SCN and captured SCN. Higher values indicate capture lag.",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "binBps",
+          "decimals": 2
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "rate(oracle_xstream_capture_bytes_mined{job=~\"oracle-exporter\"}[5m])",
+          "legendFormat": "{{capture_name}} - bytes mined/s",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream - Redo Mining Rate (bytes/s)",
+      "description": "Rate of redo log bytes being mined by capture process",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "rate(oracle_archivelog_count{job=~\"oracle-exporter\"}[5m]) * 300",
+          "legendFormat": "Archivelog generation rate (logs/5min)",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle - Archivelog Generation Rate",
+      "description": "Rate of archivelog generation. High rate may indicate high transaction volume or small log files.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "binBytes"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 27 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "oracle_archivelog_total_size_bytes{job=~\"oracle-exporter\"}",
+          "legendFormat": "Total archivelog size (bytes)",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle - Archivelog Total Size",
+      "description": "Total size of archivelogs. Monitor for disk space management.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 27 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "oracle_xstream_outbound_status{job=~\"oracle-exporter\"}",
+          "legendFormat": "{{server_name}} - status",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream - Outbound Server Status",
+      "description": "XStream outbound server connection status. 1=ATTACHED, 0=DETACHED",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 35 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "oracle_logminer_sessions_active{job=~\"oracle-exporter\"}",
+          "legendFormat": "Active LogMiner sessions",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle - LogMiner Active Sessions",
+      "description": "Number of active LogMiner sessions (used by XStream internally)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 35 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "oracle_tablespace_usage_usage_percent{job=~\"oracle-exporter\",tablespace=~\".*STREAM.*|.*UNDO.*\"}",
+          "legendFormat": "{{tablespace}} usage %",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle - Tablespace Usage (XStream/UNDO)",
+      "description": "Tablespace usage for XStream and UNDO. Monitor for space issues.",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 },
+      "id": 20,
+      "panels": [],
+      "title": "Database Host Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 44 },
+      "id": 21,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "1 - avg(rate(node_cpu_seconds_total{job=\"node-exporter\",instance=~\".*oracle.*\",mode=\"idle\"}[5m]))",
+          "legendFormat": "CPU usage",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle Host - CPU Usage",
+      "description": "Requires node_exporter on Oracle database host",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 44 },
+      "id": 22,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "1 - (node_memory_MemAvailable_bytes{job=\"node-exporter\",instance=~\".*oracle.*\"} / node_memory_MemTotal_bytes{job=\"node-exporter\",instance=~\".*oracle.*\"})",
+          "legendFormat": "Memory usage",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle Host - Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 44 },
+      "id": 23,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "1 - (node_filesystem_avail_bytes{job=\"node-exporter\",instance=~\".*oracle.*\",mountpoint=\"/\"} / node_filesystem_size_bytes{job=\"node-exporter\",instance=~\".*oracle.*\",mountpoint=\"/\"})",
+          "legendFormat": "Disk usage (root)",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle Host - Disk Usage",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["oracle", "xstream", "database", "performance"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Oracle Database Performance - XStream CDC",
+  "uid": "oracle-db-performance",
+  "version": 1,
+  "weekStart": ""
+}

@@ -1,0 +1,23 @@
+# JMX Exporter config for Schema Registry
+# Exposes Schema Registry and JVM metrics for Prometheus
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+whitelistObjectNames:
+  - "io.confluent.kafka.schemaregistry:*"
+  - "java.lang:*"
+rules:
+  - pattern: io.confluent.kafka.schemaregistry<type=(.+), name=(.+)><>Value
+    name: schema_registry_$1_$2
+    type: GAUGE
+  - pattern: io.confluent.kafka.schemaregistry<type=(.+), name=(.+)><>Count
+    name: schema_registry_$1_$2
+    type: COUNTER
+  - pattern: java.lang<type=Memory><>HeapMemoryUsage\.(used|committed|max)
+    name: jvm_memory_heap_$1
+    type: GAUGE
+  - pattern: java.lang<type=OperatingSystem><>((ProcessCpuTime|SystemCpuLoad|ProcessCpuLoad))
+    name: jvm_os_$1
+    type: GAUGE
+  - pattern: java.lang<type=Threading><>ThreadCount
+    name: jvm_threads_count
+    type: GAUGE

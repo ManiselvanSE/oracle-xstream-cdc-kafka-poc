@@ -1,0 +1,357 @@
+# JMX Exporter config for Kafka Connect
+# Exposes Connect worker and connector metrics for Prometheus
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+whitelistObjectNames:
+  - "kafka.connect:*"
+  - "kafka.consumer:*"
+  - "kafka.producer:*"
+  - "debezium.confluent.oracle:*"
+  - "java.lang:*"
+rules:
+  # Source task metrics - connector throughput (Kafka 3.x format: type=source-task-metrics, no "name" in ObjectName)
+  - pattern: kafka.connect<type=source-task-metrics, connector=(.+), task=(.+)><>source-record-write-rate
+    name: kafka_connect_source_task_metrics_source_record_write_rate
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  # Alternate ObjectName formatting (no spaces after commas)
+  - pattern: kafka.connect<type=source-task-metrics,connector=(.+),task=(.+)><>source-record-write-rate
+    name: kafka_connect_source_task_metrics_source_record_write_rate
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=source-task-metrics, connector=(.+), task=(.+)><>source-record-poll-rate
+    name: kafka_connect_source_task_metrics_source_record_poll_rate
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=source-task-metrics,connector=(.+),task=(.+)><>source-record-poll-rate
+    name: kafka_connect_source_task_metrics_source_record_poll_rate
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=source-task-metrics, connector=(.+), task=(.+)><>source-record-active-count
+    name: kafka_connect_source_task_metrics_source_record_active_count
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=source-task-metrics,connector=(.+),task=(.+)><>source-record-active-count
+    name: kafka_connect_source_task_metrics_source_record_active_count
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=source-task-metrics, connector=(.+), task=(.+)><>batch-size-avg
+    name: kafka_connect_source_task_metrics_batch_size_avg
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=source-task-metrics,connector=(.+),task=(.+)><>batch-size-avg
+    name: kafka_connect_source_task_metrics_batch_size_avg
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=connector-task-metrics, connector=(.+), task=(.+)><>running-ratio
+    name: kafka_connect_connector_task_metrics_running_ratio
+    labels:
+      connector: "$1"
+      task: "$2"
+    type: GAUGE
+  - pattern: kafka.connect<type=(.+), name=(.+), connector=(.+), task=(.*)><>Value
+    name: kafka_connect_$1_$2
+    labels:
+      connector: "$3"
+      task: "$4"
+    type: GAUGE
+  - pattern: kafka.connect<type=(.+), name=(.+)><>Value
+    name: kafka_connect_$1_$2
+    type: GAUGE
+  - pattern: kafka.connect<type=(.+), name=(.+), connector=(.+), task=(.*)><>Count
+    name: kafka_connect_$1_$2
+    labels:
+      connector: "$3"
+      task: "$4"
+    type: COUNTER
+  - pattern: kafka.connect<type=(.+), name=(.+), connector=(.+), task=(.*)><>(OneMinuteRate|FiveMinuteRate|FifteenMinuteRate|MeanRate)
+    name: kafka_connect_$1_$2
+    labels:
+      connector: "$3"
+      task: "$4"
+    type: GAUGE
+  - pattern: kafka.connect<type=(.+), name=(.+)><>Count
+    name: kafka_connect_$1_$2
+    type: COUNTER
+  - pattern: kafka.consumer<type=(.+), name=(.+), client-id=(.+), topic=(.+), partition=(.*)><>Value
+    name: kafka_consumer_$1_$2
+    labels:
+      client_id: "$3"
+      topic: "$4"
+      partition: "$5"
+    type: GAUGE
+  - pattern: java.lang<type=Memory><>HeapMemoryUsage\.(used|committed|max)
+    name: jvm_memory_heap_$1
+    type: GAUGE
+  - pattern: java.lang<type=OperatingSystem><>((ProcessCpuTime|SystemCpuLoad|ProcessCpuLoad))
+    name: jvm_os_$1
+    type: GAUGE
+  - pattern: java.lang<type=Threading><>ThreadCount
+    name: jvm_threads_count
+    type: GAUGE
+  # Worker rebalance (Connect cluster dashboards)
+  - pattern: kafka.connect<type=connect-worker-rebalance-metrics><>completed-rebalances-total
+    name: kafka_connect_connect_worker_rebalance_completed_rebalances_total
+    type: COUNTER
+  - pattern: kafka.connect<type=connect-worker-rebalance-metrics><>rebalance-avg-time-ms
+    name: kafka_connect_connect_worker_rebalance_avg_time_ms
+    type: GAUGE
+
+  # ---------------------------------------------------------------------------
+  # Confluent Oracle XStream CDC Source — debezium.confluent.oracle MBeans
+  # https://docs.confluent.io/kafka-connectors/oracle-xstream-cdc-source/current/connector-monitoring-metrics.html
+  # topic.prefix → MBean server=<prefix> (e.g. racdb)
+  # JVMs often canonicalize ObjectName with spaces after commas:
+  #   ,context=streaming,server=racdb  OR  , context=streaming, server=racdb
+  # Duplicate rules below cover both forms (jmx_exporter pattern must match exactly).
+  # ---------------------------------------------------------------------------
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>TotalNumberOfEventsSeen'
+    name: debezium_oracle_connector_total_number_of_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: COUNTER
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>NumberOfEventsFiltered'
+    name: debezium_oracle_connector_number_of_events_filtered
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>MilliSecondsBehindSource'
+    name: debezium_oracle_connector_milliseconds_behind_source
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>CommitMilliSecondsBehindSource'
+    name: debezium_oracle_connector_commit_milliseconds_behind_source
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>QueueRemainingCapacity'
+    name: debezium_oracle_connector_queue_remaining_capacity
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>QueueTotalCapacity'
+    name: debezium_oracle_connector_queue_total_capacity
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>TotalNumberOfCreateEventsSeen'
+    name: debezium_oracle_connector_total_number_of_create_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>TotalNumberOfUpdateEventsSeen'
+    name: debezium_oracle_connector_total_number_of_update_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>TotalNumberOfDeleteEventsSeen'
+    name: debezium_oracle_connector_total_number_of_delete_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>NumberOfCommittedTransactions'
+    name: debezium_oracle_connector_number_of_committed_transactions
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>MilliSecondsSinceLastEvent'
+    name: debezium_oracle_connector_milliseconds_since_last_event
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>LastCallbackDurationInMilliseconds'
+    name: debezium_oracle_connector_last_callback_duration_milliseconds
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>LastCallbackReceivedLcrs'
+    name: debezium_oracle_connector_last_callback_received_lcrs
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>RemainingTableCount'
+    name: debezium_oracle_connector_remaining_table_count
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics,context=(.+),server=(.+)><>TotalTableCount'
+    name: debezium_oracle_connector_total_table_count
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+
+  # Spaced-comma ObjectName variant (see comment block above)
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>TotalNumberOfEventsSeen'
+    name: debezium_oracle_connector_total_number_of_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: COUNTER
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>NumberOfEventsFiltered'
+    name: debezium_oracle_connector_number_of_events_filtered
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>MilliSecondsBehindSource'
+    name: debezium_oracle_connector_milliseconds_behind_source
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>CommitMilliSecondsBehindSource'
+    name: debezium_oracle_connector_commit_milliseconds_behind_source
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>QueueRemainingCapacity'
+    name: debezium_oracle_connector_queue_remaining_capacity
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>QueueTotalCapacity'
+    name: debezium_oracle_connector_queue_total_capacity
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>TotalNumberOfCreateEventsSeen'
+    name: debezium_oracle_connector_total_number_of_create_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>TotalNumberOfUpdateEventsSeen'
+    name: debezium_oracle_connector_total_number_of_update_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>TotalNumberOfDeleteEventsSeen'
+    name: debezium_oracle_connector_total_number_of_delete_events_seen
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>NumberOfCommittedTransactions'
+    name: debezium_oracle_connector_number_of_committed_transactions
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>MilliSecondsSinceLastEvent'
+    name: debezium_oracle_connector_milliseconds_since_last_event
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>LastCallbackDurationInMilliseconds'
+    name: debezium_oracle_connector_last_callback_duration_milliseconds
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>LastCallbackReceivedLcrs'
+    name: debezium_oracle_connector_last_callback_received_lcrs
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>RemainingTableCount'
+    name: debezium_oracle_connector_remaining_table_count
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+  - pattern: 'debezium.confluent.oracle<type=connector-metrics, context=(.+), server=(.+)><>TotalTableCount'
+    name: debezium_oracle_connector_total_table_count
+    labels:
+      context: "$1"
+      server: "$2"
+    type: GAUGE
+
+  # Kafka producer (Connect internal producers) — https://docs.confluent.io/platform/current/kafka/producer-metrics.html
+  - pattern: kafka.producer<type=producer-metrics,client-id=(.+)><>outgoing-byte-rate
+    name: kafka_producer_outgoing_byte_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics, client-id=(.+)><>outgoing-byte-rate
+    name: kafka_producer_outgoing_byte_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics,client-id=(.+)><>incoming-byte-rate
+    name: kafka_producer_incoming_byte_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics, client-id=(.+)><>incoming-byte-rate
+    name: kafka_producer_incoming_byte_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics,client-id=(.+)><>request-latency-avg
+    name: kafka_producer_request_latency_avg
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics, client-id=(.+)><>request-latency-avg
+    name: kafka_producer_request_latency_avg
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics,client-id=(.+)><>record-send-rate
+    name: kafka_producer_record_send_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics, client-id=(.+)><>record-send-rate
+    name: kafka_producer_record_send_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics,client-id=(.+)><>record-error-rate
+    name: kafka_producer_record_error_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE
+  - pattern: kafka.producer<type=producer-metrics, client-id=(.+)><>record-error-rate
+    name: kafka_producer_record_error_rate
+    labels:
+      client_id: "$1"
+    type: GAUGE

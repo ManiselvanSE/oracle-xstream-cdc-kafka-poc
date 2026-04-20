@@ -1,0 +1,30 @@
+# Kafka Connect with Oracle XStream CDC Connector
+# Requires Oracle Instant Client mounted at runtime (see docker-compose volumes)
+FROM confluentinc/cp-kafka-connect:7.9.0
+
+# JMX Exporter for Prometheus metrics (same path as broker for consistency)
+ARG JMX_VERSION=0.20.0
+USER root
+RUN mkdir -p /opt/jmx-exporter && \
+    curl -sL -o /opt/jmx-exporter/jmx_prometheus_javaagent.jar \
+    "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_VERSION}/jmx_prometheus_javaagent-${JMX_VERSION}.jar" && \
+    chown -R appuser:appuser /opt/jmx-exporter
+USER appuser
+
+# Install libaio and ensure libnsl.so.1 for Oracle OCI driver (libocijdbc19.so)
+# Base image has libnsl.so.2; Oracle may need libnsl.so.1 - create symlink if missing
+USER root
+RUN microdnf install -y libaio && microdnf clean all \
+  && ([ -f /usr/lib64/libnsl.so.1 ] || ln -sf /usr/lib64/libnsl.so.2 /usr/lib64/libnsl.so.1)
+USER appuser
+
+# Install Oracle XStream CDC connector from Confluent Hub
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-oracle-xstream-cdc-source:latest
+
+# Entrypoint copies Oracle JARs (ojdbc8, xstreams) from mounted Instant Client into connector lib
+# OCI driver requires these in the plugin classpath
+COPY connect-entrypoint.sh /connect-entrypoint.sh
+USER root
+RUN chmod +x /connect-entrypoint.sh && mkdir -p /opt/oracle/instantclient && chown -R appuser:appuser /opt/oracle
+USER appuser
+ENTRYPOINT ["/connect-entrypoint.sh"]

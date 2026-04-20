@@ -1,0 +1,514 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Kafka Connect REST API",
+      "url": "http://connect:8083/connectors",
+      "type": "link",
+      "icon": "external link",
+      "targetBlank": true
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "mode": "markdown",
+        "content": "### Oracle XStream CDC Connector - Health & Status\n\nMonitors connector and task health, failures, restarts, and resource utilization."
+      },
+      "title": "Dashboard Overview",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 3 },
+      "id": 10,
+      "panels": [],
+      "title": "Connector & Task Status",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "type": "value", "options": { "0": { "color": "red", "text": "STOPPED" }, "1": { "color": "green", "text": "RUNNING" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 4 },
+      "id": 11,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "up{job=~\"kafka-connect\"}",
+          "legendFormat": "Kafka Connect",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0.8 }, { "color": "green", "value": 0.95 }] },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 4 },
+      "id": 12,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "kafka_connect_connector_task_metrics_running_ratio{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Task Running Ratio",
+      "description": "Should be close to 1.0 for healthy tasks",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 100 }, { "color": "red", "value": 1000 }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 4 },
+      "id": 13,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_active_count{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Records (in-flight)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 10 }] },
+          "unit": "ops",
+          "decimals": 3
+        }
+      },
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 4 },
+      "id": 14,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "rate(kafka_producer_record_error_rate{job=~\"kafka-connect\"}[5m])",
+          "legendFormat": "{{client_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Producer Error Rate",
+      "description": "Should be 0 for healthy connector",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "id": 15,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_connector_task_metrics_running_ratio{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} task {{task}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Task Running Ratio Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "id": 16,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_active_count{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} task {{task}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Record Count Over Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+      "id": 20,
+      "panels": [],
+      "title": "Connector Queue & Back-pressure",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto", "fillOpacity": 30 },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 18 },
+      "id": 21,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_queue_remaining_capacity{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "Remaining - {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_queue_total_capacity{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "Total - {{server}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Streaming Queue Capacity",
+      "description": "Remaining should stay well above 0. If it drops to 0, back-pressure is occurring.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.7 }, { "color": "red", "value": 0.9 }] },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 18 },
+      "id": 22,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "1 - (debezium_oracle_connector_queue_remaining_capacity{job=~\"kafka-connect\",context=\"streaming\"} / debezium_oracle_connector_queue_total_capacity{job=~\"kafka-connect\",context=\"streaming\"})",
+          "legendFormat": "{{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Queue Utilization % (Current)",
+      "description": "Percentage of queue capacity in use. High values indicate potential back-pressure.",
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "id": 30,
+      "panels": [],
+      "title": "Resource Utilization",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "id": 31,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_os_processcpuload{job=~\"kafka-connect\"}",
+          "legendFormat": "CPU - {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect - JVM CPU Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "id": 32,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_memory_bytes_used{job=~\"kafka-connect\",area=\"heap\"} / jvm_memory_bytes_max{job=~\"kafka-connect\",area=\"heap\"}",
+          "legendFormat": "Heap utilization - {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect - Heap Memory Utilization",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "binBytes"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 36 },
+      "id": 33,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_memory_bytes_used{job=~\"kafka-connect\",area=\"heap\"}",
+          "legendFormat": "Heap used - {{instance}}",
+          "refId": "A"
+        },
+        {
+          "expr": "jvm_memory_bytes_max{job=~\"kafka-connect\",area=\"heap\"}",
+          "legendFormat": "Heap max - {{instance}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Kafka Connect - Heap Memory (bytes)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 36 },
+      "id": 34,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_threads_count{job=~\"kafka-connect\"}",
+          "legendFormat": "Thread count - {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect - JVM Thread Count",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 44 },
+      "id": 40,
+      "panels": [],
+      "title": "Connector Performance Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "ops",
+          "decimals": 2
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 45 },
+      "id": 41,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_poll_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "Poll rate - {{connector}} t{{task}}",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_write_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "Write rate - {{connector}} t{{task}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Poll vs Write Rate",
+      "description": "Poll = reading from source (Oracle), Write = writing to Kafka",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short",
+          "decimals": 1
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 45 },
+      "id": 42,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_batch_size_avg{job=~\"kafka-connect\"}",
+          "legendFormat": "Batch size avg - {{connector}} t{{task}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Source Task Batch Size (avg)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
+      "id": 50,
+      "panels": [],
+      "title": "Errors & Failures",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "ops",
+          "decimals": 3
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 54 },
+      "id": 51,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_producer_record_error_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "Error rate - {{client_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Producer Record Error Rate",
+      "description": "Rate of failed producer sends",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 54 },
+      "id": 52,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_number_of_events_filtered{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "Events filtered - {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Number of Events Filtered",
+      "description": "Events that were filtered out (e.g., by table.include.list)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 62 },
+      "id": 60,
+      "panels": [],
+      "title": "Operational Checks",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 63 },
+      "id": 61,
+      "options": {
+        "mode": "markdown",
+        "content": "### Health Check Runbook\n\n| Metric | Good | Warning | Action |\n|--------|------|---------|--------|\n| **Task Running Ratio** | ≥ 0.95 | < 0.95 | Check connector logs, restart if needed |\n| **Queue Utilization** | < 70% | 70-90% | Monitor for back-pressure, may need tuning |\n| **CPU Usage** | < 70% | > 80% | Scale Connect workers or reduce load |\n| **Heap Utilization** | < 80% | > 85% | Increase heap size or investigate memory leak |\n| **Producer Error Rate** | 0 | > 0 | Check broker connectivity, topic permissions |\n| **Lag (ms behind source)** | < 5000 | > 30000 | Check Oracle performance, connector config |\n\n**Common Issues:**\n- Task FAILED: Check logs for errors, verify Oracle connectivity and XStream setup\n- High queue utilization: Kafka write slowness, increase `max.queue.size` or tune producer\n- Zero throughput: Verify Oracle capture is running, check table.include.list patterns\n- High lag: Oracle under load, increase connector tasks or optimize queries"
+      },
+      "title": "Health Check & Troubleshooting",
+      "type": "text"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["kafka-connect", "oracle-xstream", "health", "status"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "All", "value": ".*" },
+        "hide": 2,
+        "includeAll": false,
+        "label": "Server (unused)",
+        "multi": true,
+        "name": "server",
+        "options": [
+          { "selected": true, "text": "All", "value": ".*" },
+          { "selected": false, "text": "racdb", "value": "racdb" }
+        ],
+        "query": "All : .*, racdb : racdb",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Kafka Connect - Connector Health & Status",
+  "uid": "connector-health-status",
+  "version": 1,
+  "weekStart": ""
+}

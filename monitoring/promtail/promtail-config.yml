@@ -1,0 +1,46 @@
+# Ship Docker container logs to Loki (Promtail discovers containers via docker.sock).
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: kafka-connect
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: name
+            values: [connect]
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        regex: "/(.*)"
+        target_label: container
+      - source_labels: [__meta_docker_container_log_stream]
+        target_label: stream
+      - target_label: job
+        replacement: kafka-connect
+    pipeline_stages:
+      - regex:
+          expression: '.*\[(?P<level>(ERROR|WARN|INFO|DEBUG|TRACE))\].*'
+      - labels:
+          level:
+
+  - job_name: kafka-broker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: name
+            values: [kafka1, kafka2, kafka3]
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        regex: "/(.*)"
+        target_label: container
+      - target_label: job
+        replacement: kafka-broker

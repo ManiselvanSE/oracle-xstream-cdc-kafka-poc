@@ -1,0 +1,735 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.9 }] },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 32 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_os_processcpuload{job=~\"$broker_job|$connect_job|schema-registry\"}",
+          "legendFormat": "{{job}} - {{instance}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage (JVM Process)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.8 }, { "color": "red", "value": 0.9 }] },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 32 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_memory_bytes_used{job=~\"$broker_job|$connect_job|schema-registry\",area=\"heap\"}",
+          "legendFormat": "{{job}} heap used",
+          "refId": "A"
+        }
+      ],
+      "title": "JVM Heap Memory Used",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "color": "red", "text": "DOWN" },
+                "1": { "color": "green", "text": "UP" }
+              }
+            }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 32 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [
+        {
+          "expr": "up{job=~\"$broker_job|$connect_job|schema-registry|kafka-exporter|prometheus\"}",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Targets Up",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 32 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_threads_count{job=~\"$broker_job|$connect_job|schema-registry\"}",
+          "legendFormat": "{{job}}",
+          "refId": "A"
+        }
+      ],
+      "title": "JVM Thread Count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 38 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_lag{job=~\"kafka-exporter\"}",
+          "legendFormat": "{{consumergroup}} / {{topic}} / p{{partition}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(kafka_consumergroup_lag{job=~\"kafka-exporter\"}) by (consumergroup)",
+          "legendFormat": "total lag — {{consumergroup}}",
+          "refId": "B"
+        },
+        {
+          "expr": "count(kafka_consumergroup_lag{job=~\"kafka-exporter\"})",
+          "legendFormat": "lag series count (0 = no consumers scraped)",
+          "refId": "C"
+        }
+      ],
+      "description": "Uses kafka-exporter `kafka_consumergroup_lag`. **No data** on series A/B is normal for **producer-only CDC** (no consumer groups). Ref **C** shows how many lag series exist (often 0). To see lag, run a consumer group against MTX topics.",
+      "title": "Consumer Group Lag (Kafka Exporter)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 38 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_topic_partitions{job=~\"kafka-exporter\"}",
+          "legendFormat": "{{topic}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Topic Partitions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 44 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\"}[5m]))",
+          "legendFormat": "Total msg/sec (rate [5m])",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\"}[5m])) by (topic)",
+          "legendFormat": "{{topic}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(kafka_server_brokertopicmetrics_messagesin_oneminuterate{job=~\"$broker_job\"})",
+          "legendFormat": "Total (broker 1m gauge)",
+          "refId": "C"
+        }
+      ],
+      "description": "**Primary:** `rate(MessagesIn counter [5m])`. **C:** broker **OneMinuteRate** when `rate` is flat. `job=~\"$broker_job\"` matches the scrape job name.",
+      "title": "Kafka Throughput (messages/sec)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 44 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\"}[5m])) by (topic)",
+          "legendFormat": "{{topic}} - msg/sec",
+          "refId": "A"
+        }
+      ],
+      "description": "Per-topic produce rate from broker counter (`rate` [5m]). Compare total line **C** on *Kafka Throughput* if this stays at 0 but the 1m gauge moves.",
+      "title": "Kafka Message Rate (messages/sec per topic)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 50 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\",topic=\"$cdc_topic_full\"}[5m]))",
+          "legendFormat": "MTX items (exact topic $cdc_topic_full)",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\",topic=~\"$mtx_topic\"}[5m])) by (topic)",
+          "legendFormat": "{{topic}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(kafka_server_brokertopicmetrics_messagesin_oneminuterate{job=~\"$broker_job\",topic=~\"$mtx_topic\"})",
+          "legendFormat": "Total CDC (1m broker gauge, mtx_topic regex)",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(debezium_oracle_connector_total_number_of_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m])) by (server)",
+          "legendFormat": "CDC events/sec (Debezium) {{server}}",
+          "refId": "D"
+        },
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\"}[5m]))",
+          "legendFormat": "All topics — broker total (debug)",
+          "refId": "E"
+        },
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\",topic=~\"__cflt-oracle-heartbeat.*\"}[5m]))",
+          "legendFormat": "Connector heartbeat topic only (not MTX DML)",
+          "refId": "F"
+        }
+      ],
+      "description": "**A:** Broker msg/s for **exact** topic (`CDC topic (exact)` variable — matches `racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS` in Prometheus). **B–C:** Regex `$mtx_topic` (if A is 0, check topic name vs variable). **D:** Debezium streaming JMX. **E/F:** Debug totals vs heartbeat. Snapshot-phase rate removed here to avoid empty-series panel warnings.",
+      "title": "Oracle XStream CDC Throughput (messages/sec from RAC)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short",
+          "decimals": 2,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 6, "w": 8, "x": 12, "y": 50 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_write_rate{job=~\"$connect_job\"}",
+          "legendFormat": "{{connector}} task {{task}} - records/sec",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(kafka_producer_record_send_rate{job=~\"$connect_job\"}) by (client_id)",
+          "legendFormat": "producer {{client_id}} (fallback)",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(debezium_oracle_connector_total_number_of_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m])) by (server)",
+          "legendFormat": "Debezium events/sec {{server}}",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(debezium_oracle_connector_total_number_of_events_seen{job=~\"$connect_job\",context=\"snapshot\"}[5m])) by (server)",
+          "legendFormat": "Debezium snapshot ctx {{server}}",
+          "refId": "D"
+        }
+      ],
+      "description": "**A:** source-record-write-rate. **B:** producer send rate. **C/D:** Debezium streaming vs snapshot (if C=0 and D>0, snapshot still running).",
+      "title": "Oracle XStream Connector Throughput (records/sec)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short",
+          "decimals": 3
+        }
+      },
+      "gridPos": { "h": 6, "w": 4, "x": 20, "y": 50 },
+      "id": 11,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total{job=~\"$broker_job\",topic=\"$cdc_topic_full\"}[5m]))",
+          "legendFormat": "Broker → $cdc_topic_full (msg/s)",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(debezium_oracle_connector_total_number_of_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m]))",
+          "legendFormat": "Debezium streaming (events/s)",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(kafka_connect_source_task_metrics_source_record_write_rate{job=~\"$connect_job\",connector=~\"oracle-xstream.*\"})",
+          "legendFormat": "Connect source-record-write (JMX gauge)",
+          "refId": "C"
+        }
+      ],
+      "description": "**A** Kafka broker rate on the CDC topic (non-zero during load). **B** Debezium counter rate. **C** Connect task gauge (often low between batches — prefer A/B).",
+      "title": "Connector Rate (records/sec) – current",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 30,
+      "panels": [],
+      "title": "Oracle CDC — Debezium MBeans (context=streaming, server=topic.prefix)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "description": "MBean: debezium.confluent.oracle:type=connector-metrics,context=streaming,server=<topic.prefix>. If values look wrong or negative, set database.os.timezone per Confluent connector docs.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
+      "id": 31,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_milliseconds_behind_source{job=~\"$connect_job\",context=\"streaming\"}",
+          "legendFormat": "MilliSecondsBehindSource — {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_commit_milliseconds_behind_source{job=~\"$connect_job\",context=\"streaming\"}",
+          "legendFormat": "CommitMilliSecondsBehindSource — {{server}}",
+          "refId": "B"
+        },
+        {
+          "expr": "debezium_oracle_connector_milliseconds_since_last_event{job=~\"$connect_job\",context=\"streaming\"}",
+          "legendFormat": "MilliSecondsSinceLastEvent — {{server}}",
+          "refId": "C"
+        }
+      ],
+      "title": "Lag — streaming (source redo vs connector)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "description": "TotalNumberOfEventsSeen and DML counters are cumulative gauges; Grafana shows rate(/s). JMX rules: monitoring/jmx/kafka-connect.yml.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "decimals": 3,
+          "min": 0,
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 9 },
+      "id": 32,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "rate(debezium_oracle_connector_total_number_of_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m])",
+          "legendFormat": "TotalNumberOfEventsSeen (/s) — {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(debezium_oracle_connector_total_number_of_create_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m])",
+          "legendFormat": "TotalNumberOfCreateEventsSeen (/s) — {{server}}",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(debezium_oracle_connector_total_number_of_update_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m])",
+          "legendFormat": "TotalNumberOfUpdateEventsSeen (/s) — {{server}}",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(debezium_oracle_connector_total_number_of_delete_events_seen{job=~\"$connect_job\",context=\"streaming\"}[5m])",
+          "legendFormat": "TotalNumberOfDeleteEventsSeen (/s) — {{server}}",
+          "refId": "D"
+        }
+      ],
+      "title": "Throughput — event & DML rates (streaming)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "decimals": 3,
+          "min": 0,
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 17 },
+      "id": 33,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "rate(debezium_oracle_connector_number_of_committed_transactions{job=~\"$connect_job\",context=\"streaming\"}[5m])",
+          "legendFormat": "NumberOfCommittedTransactions (/s) — {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Throughput — committed transactions (/s)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "description": "Kafka producer JMX (Connect internal clients). See Confluent producer metrics doc.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "decimals": 2,
+          "unit": "Bps"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 17 },
+      "id": 34,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_producer_outgoing_byte_rate{job=~\"$connect_job\"}",
+          "legendFormat": "{{client_id}} — outgoing-byte-rate",
+          "refId": "A"
+        }
+      ],
+      "title": "Connect internal producer — outgoing-byte-rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "description": "QueueRemainingCapacity / QueueTotalCapacity for the streaming pipeline queue.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "min": 0,
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "id": 35,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_queue_remaining_capacity{job=~\"$connect_job\",context=\"streaming\"}",
+          "legendFormat": "QueueRemainingCapacity — {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_queue_total_capacity{job=~\"$connect_job\",context=\"streaming\"}",
+          "legendFormat": "QueueTotalCapacity — {{server}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Back-pressure — streaming event queue capacity",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 56 },
+      "id": 20,
+      "panels": [],
+      "title": "Runbook — checks not available in Prometheus",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 5, "w": 24, "x": 0, "y": 57 },
+      "id": 21,
+      "options": {
+        "mode": "markdown",
+        "content": "### What to check when throughput is zero\n\n| Area | Command / place |\n|------|-----------------|\n| **Connector task** | `curl -s http://localhost:8083/connectors/oracle-xstream-rac-connector/status` — `RUNNING`, task `RUNNING` |\n| **Connector logs** | `docker logs connect --tail 200` — look for Oracle/XStream errors, **snapshot** vs **streaming** |\n| **Oracle (MTX)** | SYSDBA: `sqlplus @oracle-database/diagnose-mtx-cdc.sql` — supplemental log, `DBA_XSTREAM_RULES`, capture `ENABLED` |\n| **table.include.list** | Must include `ORDERMGMT.MTX.*` (same PDB/service as HammerDB) |\n| **Kafka topics** | `kafka-topics --list \\| grep racdb` — topics must exist |\n| **JMX / Grafana** | Debezium panels need `debezium.confluent.oracle:*` in Connect JMX (`monitoring/jmx/kafka-connect.yml`); **restart Connect** after edits |\n\n**Note:** Small periodic spikes are often **connector heartbeat** (`heartbeat.interval.ms`), not DML. Compare MTX topic lines vs `__cflt-oracle-heartbeat` on the dashboard."
+      },
+      "title": "Operational checklist",
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 62 },
+      "id": 22,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_poll_rate{job=~\"$connect_job\"}",
+          "legendFormat": "{{connector}} t{{task}} poll/sec",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_write_rate{job=~\"$connect_job\"}",
+          "legendFormat": "{{connector}} t{{task}} write/sec",
+          "refId": "B"
+        },
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_active_count{job=~\"$connect_job\"}",
+          "legendFormat": "{{connector}} t{{task}} active records",
+          "refId": "C"
+        }
+      ],
+      "description": "Poll = read from Oracle; write = after transforms to Kafka. If poll \u003e 0 but write = 0, check SMT/transforms and topic ACLs.",
+      "title": "Connector: poll vs write vs active (source task)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisPlacement": "auto" },
+          "unit": "short",
+          "decimals": 2
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 62 },
+      "id": 23,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_batch_size_avg{job=~\"$connect_job\"}",
+          "legendFormat": "{{connector}} batch avg",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_connect_connector_task_metrics_running_ratio{job=~\"$connect_job\"}",
+          "legendFormat": "{{connector}} t{{task}} running ratio",
+          "refId": "B"
+        }
+      ],
+      "description": "Running ratio near 1 = task healthy. Batch size reflects fetch batching from the connector.",
+      "title": "Connector: batch size & task running ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "Bps"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 69 },
+      "id": 24,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_server_brokertopicmetrics_bytesin_total{job=~\"$broker_job\",topic=~\"$mtx_topic\"}[5m])) by (topic)",
+          "legendFormat": "{{topic}} bytes/s in",
+          "refId": "A"
+        }
+      ],
+      "description": "Broker bytes in per CDC topic (complements message rate).",
+      "title": "CDC topics — bytes in per second (brokers)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 69 },
+      "id": 25,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "jvm_memory_bytes_used{job=~\"$connect_job\",area=\"heap\"} / jvm_memory_bytes_max{job=~\"$connect_job\",area=\"heap\"}",
+          "legendFormat": "Connect heap % used",
+          "refId": "A"
+        },
+        {
+          "expr": "jvm_os_processcpuload{job=~\"$connect_job\"}",
+          "legendFormat": "Connect CPU (process)",
+          "refId": "B"
+        }
+      ],
+      "description": "Connect worker resource pressure. High heap + errors in logs may need heap tuning.",
+      "title": "Kafka Connect — CPU & heap utilization",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["kafka", "oracle-xstream-cdc", "monitoring"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "Prometheus", "value": "prometheus" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": true, "text": "kafka-broker", "value": "kafka-broker" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Broker job",
+        "name": "broker_job",
+        "options": [
+          { "selected": true, "text": "kafka-broker", "value": "kafka-broker" }
+        ],
+        "query": "kafka-broker : kafka-broker",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "kafka-connect", "value": "kafka-connect" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Connect job",
+        "name": "connect_job",
+        "options": [
+          { "selected": true, "text": "kafka-connect", "value": "kafka-connect" }
+        ],
+        "query": "kafka-connect : kafka-connect",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "MTX_TRANSACTION_ITEMS only", "value": ".*ORDERMGMT\\\\.MTX_TRANSACTION_ITEMS" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "MTX topic regex",
+        "name": "mtx_topic",
+        "options": [
+          { "selected": true, "text": "MTX_TRANSACTION_ITEMS only", "value": ".*ORDERMGMT\\\\.MTX_TRANSACTION_ITEMS" },
+          { "selected": false, "text": "All ORDERMGMT.MTX*", "value": ".*\\\\.ORDERMGMT\\\\.MTX.*" }
+        ],
+        "query": "MTX_TRANSACTION_ITEMS only : .*ORDERMGMT\\\\.MTX_TRANSACTION_ITEMS, All ORDERMGMT.MTX* : .*\\\\.ORDERMGMT\\\\.MTX.*",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": "racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS", "value": "racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "CDC topic (exact)",
+        "name": "cdc_topic_full",
+        "options": [
+          { "selected": true, "text": "racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS", "value": "racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS" },
+          { "selected": false, "text": "with PDB prefix (if used)", "value": "racdb.XSTRPDB.ORDERMGMT.MTX_TRANSACTION_ITEMS" }
+        ],
+        "query": "racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS : racdb.ORDERMGMT.MTX_TRANSACTION_ITEMS, with PDB prefix (if used) : racdb.XSTRPDB.ORDERMGMT.MTX_TRANSACTION_ITEMS",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Oracle XStream CDC - Kafka Overview",
+  "uid": "oracle-xstream-kafka-overview",
+  "version": 6,
+  "weekStart": ""
+}

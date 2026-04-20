@@ -1,0 +1,31 @@
+# Secrets - do not commit
+docker/.env
+.status-config
+monitoring/agents/
+xstream-connector/oracle-xstream-rac.json
+xstream-connector/oracle-xstream-rac-docker.json
+xstream-connector/oracle-xstream-rac-docker.json.local.bak
+xstream-connector/oracle-xstream-rac-connector.properties
+oracle-database/tnsnames.ora
+oracle-database/xstream-admin.env
+
+# Redaction venv
+.venv-redact/
+
+# Logs
+*.log
+logs/
+
+# Confluent / Kafka data (if run locally)
+/var/lib/kafka-data/
+/tmp/kraft-combined-logs/
+data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store

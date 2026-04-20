@@ -1,0 +1,91 @@
+# Prometheus alerting rules for Oracle XStream CDC POC
+# Critical thresholds for Kafka, Connect, and infrastructure
+groups:
+  - name: kafka-broker
+    rules:
+      - alert: KafkaBrokerDown
+        expr: up{job="kafka-broker"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka broker {{ $labels.instance }} is down"
+          description: "Kafka broker has been unreachable for more than 1 minute."
+
+      - alert: KafkaBrokerHighCPU
+        expr: jvm_os_processcpuload{job="kafka-broker"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka broker {{ $labels.instance }} high CPU usage"
+          description: "CPU usage is above 90% for more than 5 minutes."
+
+      - alert: KafkaBrokerHighMemory
+        expr: (jvm_memory_bytes_used{job="kafka-broker",area="heap"} / jvm_memory_bytes_max{job="kafka-broker",area="heap"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka broker {{ $labels.instance }} high heap memory"
+          description: "Heap memory usage is above 90% for more than 5 minutes."
+
+  - name: kafka-connect
+    rules:
+      - alert: KafkaConnectDown
+        expr: up{job="kafka-connect"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka Connect is down"
+          description: "Kafka Connect has been unreachable for more than 1 minute."
+
+      - alert: KafkaConnectHighCPU
+        expr: jvm_os_processcpuload{job="kafka-connect"} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Connect high CPU usage"
+          description: "CPU usage is above 90% for more than 5 minutes."
+
+      - alert: KafkaConnectHighMemory
+        expr: (jvm_memory_bytes_used{job="kafka-connect",area="heap"} / jvm_memory_bytes_max{job="kafka-connect",area="heap"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Connect high heap memory"
+          description: "Heap memory usage is above 90% for more than 5 minutes."
+
+  - name: schema-registry
+    rules:
+      - alert: SchemaRegistryDown
+        expr: up{job="schema-registry"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Schema Registry is down"
+          description: "Schema Registry has been unreachable for more than 1 minute."
+
+  - name: kafka-exporter
+    rules:
+      - alert: KafkaExporterDown
+        expr: up{job="kafka-exporter"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka Exporter is down"
+          description: "Kafka Exporter has been unreachable for more than 1 minute."
+
+      - alert: KafkaConsumerLagHigh
+        expr: kafka_consumergroup_lag{job="kafka-exporter"} > 10000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High consumer lag for {{ $labels.consumergroup }}"
+          description: "Consumer group {{ $labels.consumergroup }} has lag > 10000 for more than 10 minutes."

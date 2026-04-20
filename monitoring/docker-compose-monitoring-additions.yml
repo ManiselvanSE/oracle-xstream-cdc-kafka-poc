@@ -1,0 +1,64 @@
+# Optional extras: Loki + Promtail + Alertmanager + oracle-exporter (placeholders).
+# Prefer the integrated stack in docker/docker-compose.monitoring.yml (includes Loki + Promtail).
+#
+# From repo `docker/` directory:
+#   docker compose -f docker-compose.yml -f ../monitoring/docker-compose-monitoring-additions.yml up -d
+#
+# Network must match docker-compose.yml: xstream-cdc-net
+
+services:
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ../monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ../monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  oracle-exporter:
+    image: iamseth/oracledb_exporter:0.5.0
+    container_name: oracle-exporter
+    ports:
+      - "9161:9161"
+    environment:
+      - DATA_SOURCE_NAME=oracledb_exporter/CHANGE_ME@//host:1521/SERVICE
+      - CUSTOM_METRICS=/etc/oracledb_exporter/custom-queries.toml
+    volumes:
+      - ../monitoring/oracle-exporter/custom-queries.toml:/etc/oracledb_exporter/custom-queries.toml:ro
+    restart: unless-stopped
+    profiles:
+      - oracle-exporter
+
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ../monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    restart: unless-stopped
+    profiles:
+      - alertmanager
+
+volumes:
+  loki-data:
+  alertmanager-data:

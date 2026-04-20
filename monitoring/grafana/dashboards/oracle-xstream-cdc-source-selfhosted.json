@@ -1,0 +1,442 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Confluent: Oracle XStream CDC connector metrics",
+      "url": "https://docs.confluent.io/kafka-connectors/oracle-xstream-cdc-source/current/connector-monitoring-metrics.html",
+      "type": "link",
+      "icon": "doc",
+      "targetBlank": true
+    },
+    {
+      "title": "Confluent: Kafka producer JMX metrics",
+      "url": "https://docs.confluent.io/platform/current/kafka/producer-metrics.html",
+      "type": "link",
+      "icon": "doc",
+      "targetBlank": true
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "mode": "markdown",
+        "content": "### Oracle XStream CDC Source (Confluent JMX → Prometheus)\n\nRequires **JMX exporter** on Kafka Connect with `monitoring/jmx/kafka-connect.yml` (includes `debezium.confluent.oracle:*` and `kafka.producer:*`). **Restart Connect** after updating the JMX config. **topic.prefix** in the connector maps to label **`server`** in Debezium MBeans. If lag is negative or wrong, set **`database.os.timezone`** per [connector monitoring](https://docs.confluent.io/kafka-connectors/oracle-xstream-cdc-source/current/connector-monitoring-metrics.html)."
+      },
+      "title": "About",
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 3 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_total_number_of_events_seen{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "streaming {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Total number of events seen (streaming)",
+      "description": "MBean context=streaming — TotalNumberOfEventsSeen",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 3 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_total_number_of_events_seen{job=~\"kafka-connect\",context=\"snapshot\"}",
+          "legendFormat": "snapshot {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Total number of events seen (snapshot)",
+      "description": "Visible when snapshot ran since last connector start.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ms",
+          "custom": { "axisPlacement": "auto" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 11 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_milliseconds_behind_source{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "MilliSecondsBehindSource {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Streaming lag from source (ms)",
+      "description": "If negative or odd, check database.os.timezone vs DB OS timezone.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ms",
+          "custom": { "axisPlacement": "auto" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 11 },
+      "id": 13,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_commit_milliseconds_behind_source{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "CommitMilliSecondsBehindSource {{server}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Commit LCR behind source (ms)",
+      "description": "Confluent Platform metric — CommitMilliSecondsBehindSource",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+      "id": 14,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_queue_remaining_capacity{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "streaming remaining {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_queue_total_capacity{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "streaming total {{server}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Change event queue capacity (streaming)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+      "id": 15,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_queue_remaining_capacity{job=~\"kafka-connect\",context=\"snapshot\"}",
+          "legendFormat": "snapshot remaining {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_queue_total_capacity{job=~\"kafka-connect\",context=\"snapshot\"}",
+          "legendFormat": "snapshot total {{server}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Change event queue capacity (snapshot)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 27 },
+      "id": 16,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_total_number_of_create_events_seen{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "create {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_total_number_of_update_events_seen{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "update {{server}}",
+          "refId": "B"
+        },
+        {
+          "expr": "debezium_oracle_connector_total_number_of_delete_events_seen{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "delete {{server}}",
+          "refId": "C"
+        },
+        {
+          "expr": "debezium_oracle_connector_number_of_committed_transactions{job=~\"kafka-connect\",context=\"streaming\"}",
+          "legendFormat": "committed txns {{server}}",
+          "refId": "D"
+        }
+      ],
+      "title": "Streaming — create / update / delete / committed transactions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 35 },
+      "id": 17,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "debezium_oracle_connector_remaining_table_count{job=~\"kafka-connect\",context=\"snapshot\"}",
+          "legendFormat": "remaining tables {{server}}",
+          "refId": "A"
+        },
+        {
+          "expr": "debezium_oracle_connector_total_table_count{job=~\"kafka-connect\",context=\"snapshot\"}",
+          "legendFormat": "total tables {{server}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Snapshot — table counts",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "Bps",
+          "decimals": 2,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 35 },
+      "id": 18,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_producer_outgoing_byte_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "{{client_id}} outgoing-B/s",
+          "refId": "A"
+        }
+      ],
+      "title": "Producer outgoing byte rate (Connect internal producers)",
+      "description": "kafka.producer outgoing-byte-rate — see Confluent producer metrics doc.",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ms",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 42 },
+      "id": 19,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_producer_request_latency_avg{job=~\"kafka-connect\"}",
+          "legendFormat": "{{client_id}} latency avg",
+          "refId": "A"
+        }
+      ],
+      "title": "Producer request latency (avg)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ops",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 42 },
+      "id": 20,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_producer_record_send_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "{{client_id}} records/s",
+          "refId": "A"
+        }
+      ],
+      "title": "Producer record send rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ops",
+          "decimals": 2,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 49 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_write_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}} write/s",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect — source record write rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "ops",
+          "decimals": 2,
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 49 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_poll_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}} poll/s",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_write_rate{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}} write/s",
+          "refId": "B"
+        }
+      ],
+      "title": "Kafka Connect — poll vs write rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short",
+          "min": 0
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 57 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_source_task_metrics_source_record_active_count{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}} active",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect — source active records",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 57 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "kafka_connect_connector_task_metrics_running_ratio{job=~\"kafka-connect\"}",
+          "legendFormat": "{{connector}} t{{task}} running",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect — task running ratio",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["oracle-xstream", "connect", "source", "debezium"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "All", "value": ".*" },
+        "hide": 2,
+        "includeAll": false,
+        "label": "Server (unused)",
+        "multi": true,
+        "name": "server",
+        "options": [
+          { "selected": true, "text": "All", "value": ".*" },
+          { "selected": false, "text": "racdb", "value": "racdb" }
+        ],
+        "query": "All : .*, racdb : racdb",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Oracle XStream CDC Source (self-hosted Prometheus)",
+  "uid": "oracle-xstream-cdc-source-sh",
+  "version": 2,
+  "weekStart": ""
+}

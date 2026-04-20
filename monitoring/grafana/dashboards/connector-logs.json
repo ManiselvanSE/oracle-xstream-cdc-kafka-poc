@@ -1,0 +1,386 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 3, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "mode": "markdown",
+        "content": "### Oracle XStream CDC Connector Logs\n\n**Prerequisites:** [Loki](https://grafana.com/oss/loki/) + Promtail. With `docker/docker-compose.monitoring.yml`, **Loki** and **Promtail** are included; Promtail ships the **connect** container logs with `job=kafka-connect`.\n\n**Without that compose:** use a Loki Docker logging driver or run Promtail with access to `/var/run/docker.sock`."
+      },
+      "title": "Setup Instructions",
+      "type": "text"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 3 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |= \"ERROR\" [$__interval]))",
+          "legendFormat": "ERROR logs",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |= \"WARN\" [$__interval]))",
+          "legendFormat": "WARN logs",
+          "refId": "B"
+        }
+      ],
+      "title": "Kafka Connect - Error & Warning Rate",
+      "description": "Count of ERROR and WARN log entries over time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 3 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |= \"ERROR\" [5m]))",
+          "legendFormat": "Errors (5m)",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Errors (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "orange", "value": 100 }] },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 3 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "value_and_name" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |= \"WARN\" [5m]))",
+          "legendFormat": "Warnings (5m)",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Warnings (5m)",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 11 },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |= \"ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect - ERROR Logs (Live)",
+      "description": "Real-time stream of ERROR level logs from Kafka Connect",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 23 },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |= \"WARN\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Kafka Connect - WARN Logs (Live)",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "id": 10,
+      "panels": [],
+      "title": "Oracle XStream Specific Errors",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 36 },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |~ \"(?i)(xstream|oracle|ORA-|debezium.confluent.oracle)\" |= \"ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "title": "XStream/Oracle Connector - ERROR Logs",
+      "description": "Errors specifically related to Oracle XStream connector",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 46 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |~ \"ORA-[0-9]+\" [$__interval]))",
+          "legendFormat": "Oracle errors (ORA-)",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle Error Codes (ORA-) Rate",
+      "description": "Frequency of Oracle-specific error codes in logs",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 46 },
+      "id": 13,
+      "options": {
+        "dedupStrategy": "exact",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |~ \"ORA-[0-9]+\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Oracle Database Error Codes (ORA-*)",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 56 },
+      "id": 20,
+      "panels": [],
+      "title": "Connector Task Failures & Restarts",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 57 },
+      "id": 21,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |~ \"(?i)(task.*failed|task.*restart|connector.*failed|WorkerSourceTask.*exception)\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Connector Task Failures & Restarts",
+      "description": "Logs indicating connector or task failures and restart events",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 67 },
+      "id": 22,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |~ \"(?i)(task.*failed|connector.*failed)\" [$__interval]))",
+          "legendFormat": "Task/Connector failures",
+          "refId": "A"
+        }
+      ],
+      "title": "Task Failure Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisPlacement": "auto" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 67 },
+      "id": 23,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"kafka-connect\"} |~ \"(?i)restart\" [$__interval]))",
+          "legendFormat": "Restart events",
+          "refId": "A"
+        }
+      ],
+      "title": "Connector Restart Events",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 75 },
+      "id": 30,
+      "panels": [],
+      "title": "Connection & Network Issues",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 76 },
+      "id": 31,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |~ \"(?i)(connection.*refused|timeout|network|socket|TNS-|No route to host)\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Connection & Network Errors",
+      "description": "Database connection issues, network timeouts, TNS errors",
+      "type": "logs"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 86 },
+      "id": 40,
+      "panels": [],
+      "title": "All Connector Logs (Filtered)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 15, "w": 24, "x": 0, "y": 87 },
+      "id": 41,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kafka-connect\"} |~ \"$log_filter\"",
+          "refId": "A"
+        }
+      ],
+      "title": "All Kafka Connect Logs (with filter)",
+      "description": "All logs with optional regex filter. Use variable $log_filter to search.",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["kafka-connect", "oracle-xstream", "logs", "loki"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": ".*", "value": ".*" },
+        "hide": 0,
+        "label": "Log Filter (regex)",
+        "name": "log_filter",
+        "options": [
+          { "selected": true, "text": ".*", "value": ".*" }
+        ],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Kafka Connect & XStream Connector Logs",
+  "uid": "connector-logs",
+  "version": 1,
+  "weekStart": ""
+}

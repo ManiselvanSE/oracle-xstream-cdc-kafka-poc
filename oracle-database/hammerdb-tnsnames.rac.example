@@ -1,0 +1,15 @@
+# Copy to ~/oracle/network/admin/tnsnames.ora — PoC RAC SCAN + PDB service (edit if your DB differs).
+#
+# IMPORTANT (CDB/PDB): Use the PDB service name so sessions open in XSTRPDB (local users like TPCC).
+# The DB unique-name service (e.g. DB0312_...) often attaches to CDB$ROOT → ORA-65096 on CREATE USER tpcc.
+# PDB service for this PoC matches: oracle-database/run-generate-cdc-throughput.sh (ORACLE_SERVICE).
+
+RAC_XSTRPDB_POC =
+  (DESCRIPTION =
+    (LOAD_BALANCE = yes)
+    (ADDRESS = (PROTOCOL = TCP)(HOST = racdb-scan.sub01061249390.xstrmconnectdb2.oraclevcn.com)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = XSTRPDB.sub01061249390.xstrmconnectdb2.oraclevcn.com)
+    )
+  )

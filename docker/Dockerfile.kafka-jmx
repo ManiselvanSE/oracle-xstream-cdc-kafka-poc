@@ -1,0 +1,9 @@
+# Kafka broker with JMX Exporter for Prometheus
+FROM confluentinc/cp-kafka:7.9.0
+USER root
+ARG JMX_VERSION=0.20.0
+RUN mkdir -p /opt/jmx-exporter && \
+    curl -sL -o /opt/jmx-exporter/jmx_prometheus_javaagent.jar \
+    "https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_VERSION}/jmx_prometheus_javaagent-${JMX_VERSION}.jar" && \
+    chown -R appuser:appuser /opt/jmx-exporter
+USER appuser

@@ -1,0 +1,32 @@
+HammerDB ORDERMGMT.MTX* load — copy to the hammerdb VM
+=======================================================
+
+Contents: custom HammerDB driver + wrapper (no TPCC / TPROC-C).
+
+Default HDB_MTX_MODE=all_mtx: each iteration runs hammerdb-mtx-multitable-wave.sql
+(one INSERT listing every column per MTX table per wave). Legacy: HDB_MTX_MODE=items_only
+uses hammerdb-mtx-items-only-insert.sql (full MTX_TRANSACTION_ITEMS column list). Regenerate
+both from oracle-database/generate-hammerdb-mtx-multitable-wave.py when DDL changes.
+
+From your Mac (repo root = oracle-xstream-cdc-poc):
+
+  scp hammerdb-mtx-vm-bundle.tgz opc@<hammerdb-host>:/home/opc/
+
+On the VM:
+
+  cd /home/opc
+  tar xzf hammerdb-mtx-vm-bundle.tgz
+  chmod +x hammerdb-mtx-vm-bundle/hammerdb-mtx-run-production.sh
+
+Edit hammerdb-oracle-env.sh if needed (ORACLE_HOME, TNS_ADMIN, HammerDB PATH).
+
+Run:
+
+  source /home/opc/hammerdb-mtx-vm-bundle/hammerdb-oracle-env.sh
+  export HDB_MTX_PASS='<ordermgmt_password>'
+  /home/opc/hammerdb-mtx-vm-bundle/hammerdb-mtx-run-production.sh
+
+Optional: export HDB_MTX_USER HDB_MTX_TNS HDB_MTX_TOTAL_ITERATIONS HDB_MTX_MODE
+
+Stop a running load: ../oracle-database/stop-hammerdb-load.sh (from repo) or:
+  pkill -f 'hammerdbcli tcl auto'

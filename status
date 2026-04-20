@@ -1,0 +1,31 @@
+#!/bin/bash
+# Check connector & Grafana status from your Mac (SSH to VM)
+# Usage: ./status [vm-ip]
+# Example: ./status 74.225.27.158
+# Or create .status-config with: VM_IP=74.225.27.158 and SSH_KEY=/path/to/key.pem
+
+cd "$(dirname "$0")"
+SCRIPT="scripts/status-from-mac.sh"
+
+if [ ! -f "$SCRIPT" ]; then
+  echo "Error: $SCRIPT not found."
+  exit 1
+fi
+
+# Load config if exists
+[ -f .status-config ] && source .status-config 2>/dev/null
+
+# VM_IP from arg, then env, then config
+VM_IP="${1:-$VM_IP}"
+
+if [ -z "$VM_IP" ]; then
+  echo "Usage: ./status <vm-ip>"
+  echo "Example: ./status 74.225.27.158"
+  echo ""
+  echo "Or create .status-config with:"
+  echo "  VM_IP=74.225.27.158"
+  echo "  SSH_KEY=/path/to/your-key.pem"
+  exit 1
+fi
+
+exec "$SCRIPT" "$VM_IP"

@@ -1,0 +1,75 @@
+# Prometheus configuration for Oracle XStream CDC POC
+# Scrapes JMX exporters, Kafka Exporter, and Prometheus self-metrics
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers: []
+
+rule_files:
+  - /etc/prometheus/alerts/*.yml
+  - /etc/prometheus/recording/*.yml
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          component: prometheus
+
+  # Kafka brokers - JMX Exporter metrics (CPU, memory, throughput, latency)
+  - job_name: kafka-broker
+    static_configs:
+      - targets:
+          - kafka1:9990
+          - kafka2:9990
+          - kafka3:9990
+        labels:
+          component: kafka
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Kafka Connect - JMX Exporter metrics (connector tasks, throughput, lag)
+  - job_name: kafka-connect
+    static_configs:
+      - targets:
+          - connect:9991
+        labels:
+          component: connect
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Schema Registry - JMX Exporter metrics
+  - job_name: schema-registry
+    static_configs:
+      - targets:
+          - schema-registry:9992
+        labels:
+          component: schema-registry
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Kafka Exporter - topic/partition metrics, consumer lag
+  - job_name: kafka-exporter
+    static_configs:
+      - targets:
+          - kafka-exporter:9308
+        labels:
+          component: kafka-exporter
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Optional: oracledb_exporter (uncomment after deploying; see monitoring/oracle-exporter/)
+  # - job_name: oracle-exporter
+  #   static_configs:
+  #     - targets: ['oracle-exporter:9161']
+  #       labels:
+  #         component: oracle
+  #   metrics_path: /metrics
+  #   scrape_interval: 30s

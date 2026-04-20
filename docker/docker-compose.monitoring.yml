@@ -1,0 +1,92 @@
+# Prometheus + Grafana + Kafka Exporter (merge with docker-compose.yml).
+# Base docker-compose.yml now includes JMX on Kafka, Connect, and Schema Registry.
+# Run: cd docker && docker compose -f docker-compose.yml -f docker-compose.monitoring.yml build && docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d
+#
+# Same monitoring services as docker-compose.monitoring-addon.yml, plus Prometheus alert rules mount.
+
+services:
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - --kafka.server=kafka1:29092
+      - --kafka.server=kafka2:29092
+      - --kafka.server=kafka3:29092
+      - --web.listen-address=:9308
+      - --log.level=info
+    ports:
+      - "9308:9308"
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../monitoring/prometheus/alerts:/etc/prometheus/alerts:ro
+      - ../monitoring/prometheus/recording:/etc/prometheus/recording:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - kafka-exporter
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ../monitoring/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ../monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    environment:
+      # Must match the URL you type in the browser (scheme + host + port + trailing slash).
+      # If unset/wrong, Grafana shows "failed to load its application files" (JS/CSS load from bad origin).
+      # Set in docker/.env: GRAFANA_ROOT_URL=http://137.131.53.98:3000/
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-}
+      GF_SERVER_SERVE_FROM_SUB_PATH: "false"
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+
+volumes:
+  prometheus-data:
+  grafana-data:
+  loki-data:

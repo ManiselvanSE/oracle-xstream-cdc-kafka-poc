@@ -1,0 +1,190 @@
+# Oracle Database Custom Queries for XStream CDC Monitoring
+# Use with oracledb_exporter: https://github.com/iamseth/oracledb_exporter
+#
+# Setup:
+# 1. Install oracledb_exporter
+# 2. Create monitoring user with required grants (see grants.sql)
+# 3. Set CUSTOM_METRICS=/path/to/custom-queries.toml
+# 4. Configure Prometheus to scrape oracle-exporter
+
+# XStream Capture Metrics from V$STREAMS_CAPTURE
+[[metric]]
+context = "xstream_capture"
+labels = [ "capture_name" ]
+metricsdesc = {
+  total_messages_captured = "Total messages captured by XStream",
+  bytes_mined = "Total bytes mined from redo logs",
+  status = "Capture status (1=ENABLED, 0=DISABLED, -1=ABORTED)"
+}
+request = """
+SELECT
+  c.capture_name,
+  NVL(s.total_messages_captured, 0) as total_messages_captured,
+  NVL(s.bytes_mined, 0) as bytes_mined,
+  CASE c.status
+    WHEN 'ENABLED' THEN 1
+    WHEN 'DISABLED' THEN 0
+    ELSE -1
+  END as status
+FROM dba_capture c
+LEFT JOIN v$streams_capture s ON c.capture_name = s.capture_name
+WHERE c.purpose = 'XStream'
+"""
+
+# XStream SCN Tracking
+[[metric]]
+context = "xstream_capture_scn"
+labels = [ "capture_name" ]
+metricsdesc = {
+  scn_current = "Current database SCN",
+  scn_applied = "Last SCN applied by capture"
+}
+request = """
+SELECT
+  capture_name,
+  (SELECT current_scn FROM v$database) as scn_current,
+  NVL(applied_scn, 0) as scn_applied
+FROM v$streams_capture
+WHERE capture_name IN (SELECT capture_name FROM dba_capture WHERE purpose = 'XStream')
+"""
+
+# XStream Outbound Server Status
+[[metric]]
+context = "xstream_outbound"
+labels = [ "server_name" ]
+metricsdesc = {
+  status = "Outbound server status (1=ATTACHED, 0=DETACHED)",
+  total_transactions_sent = "Total transactions sent to client",
+  message_sequence = "Current message sequence number"
+}
+request = """
+SELECT
+  server_name,
+  CASE state WHEN 'ATTACHED' THEN 1 ELSE 0 END as status,
+  NVL(total_transactions_sent, 0) as total_transactions_sent,
+  NVL(message_sequence, 0) as message_sequence
+FROM v$xstream_outbound_server
+"""
+
+# Archivelog Metrics
+[[metric]]
+context = "archivelog"
+metricsdesc = {
+  count = "Total number of archivelogs",
+  total_size_bytes = "Total size of all archivelogs in bytes"
+}
+request = """
+SELECT
+  COUNT(*) as count,
+  NVL(SUM(blocks * block_size), 0) as total_size_bytes
+FROM v$archived_log
+WHERE deleted = 'NO'
+  AND first_time > SYSDATE - 7
+"""
+
+# LogMiner Session Metrics
+[[metric]]
+context = "logminer_sessions"
+metricsdesc = {
+  active = "Number of active LogMiner sessions"
+}
+request = """
+SELECT
+  COUNT(*) as active
+FROM v$logmnr_session
+WHERE session_id IS NOT NULL
+"""
+
+# Tablespace Usage (for XStream and UNDO)
+[[metric]]
+context = "tablespace_usage"
+labels = [ "tablespace" ]
+metricsdesc = {
+  total_bytes = "Total size of tablespace in bytes",
+  used_bytes = "Used space in bytes",
+  usage_percent = "Percentage of tablespace used (0-1)"
+}
+request = """
+SELECT
+  df.tablespace_name as tablespace,
+  df.total_bytes,
+  NVL(u.used_bytes, 0) as used_bytes,
+  CASE
+    WHEN df.total_bytes > 0 THEN NVL(u.used_bytes, 0) / df.total_bytes
+    ELSE 0
+  END as usage_percent
+FROM (
+  SELECT tablespace_name, SUM(bytes) as total_bytes
+  FROM dba_data_files
+  GROUP BY tablespace_name
+) df
+LEFT JOIN (
+  SELECT tablespace_name, SUM(bytes) as used_bytes
+  FROM dba_segments
+  GROUP BY tablespace_name
+) u ON df.tablespace_name = u.tablespace_name
+WHERE df.tablespace_name IN ('STREAMS_TBS', 'UNDOTBS1', 'UNDOTBS2')
+   OR df.tablespace_name LIKE '%STREAM%'
+   OR df.tablespace_name LIKE '%UNDO%'
+"""
+
+# Streams Pool Memory
+[[metric]]
+context = "streams_pool"
+metricsdesc = {
+  size_bytes = "Current streams pool size in bytes",
+  free_bytes = "Free streams pool in bytes"
+}
+request = """
+SELECT
+  SUM(CASE name WHEN 'streams pool' THEN bytes ELSE 0 END) as size_bytes,
+  SUM(CASE name WHEN 'free memory' AND pool = 'streams pool' THEN bytes ELSE 0 END) as free_bytes
+FROM v$sgastat
+WHERE name IN ('streams pool', 'free memory')
+"""
+
+# Capture Process Lag (alternative metric)
+[[metric]]
+context = "capture_lag"
+labels = [ "capture_name" ]
+metricsdesc = {
+  lag_seconds = "Capture lag in seconds from current time"
+}
+request = """
+SELECT
+  capture_name,
+  ROUND((SYSDATE - capture_time) * 86400) as lag_seconds
+FROM v$streams_capture
+WHERE capture_name IN (SELECT capture_name FROM dba_capture WHERE purpose = 'XStream')
+"""
+
+# Active Transactions in Capture Buffer
+[[metric]]
+context = "capture_transactions"
+labels = [ "capture_name" ]
+metricsdesc = {
+  active_transactions = "Number of active transactions being captured"
+}
+request = """
+SELECT
+  c.capture_name,
+  COUNT(DISTINCT t.xidusn || '.' || t.xidslot || '.' || t.xidsqn) as active_transactions
+FROM dba_capture c
+LEFT JOIN v$streams_transaction t ON 1=1
+WHERE c.purpose = 'XStream'
+GROUP BY c.capture_name
+"""
+
+# Redo Log Generation Rate (over last 5 minutes)
+[[metric]]
+context = "redo_generation"
+metricsdesc = {
+  bytes_per_second = "Average redo generation rate in bytes per second"
+}
+request = """
+SELECT
+  ROUND(SUM(bytes) / (5 * 60)) as bytes_per_second
+FROM v$archived_log
+WHERE first_time > SYSDATE - INTERVAL '5' MINUTE
+  AND deleted = 'NO'
+"""

@@ -1,0 +1,47 @@
+Import dashboards into Grafana (e.g. http://137.131.53.98:3000/)
+================================================================
+
+1) Fix Grafana if the UI shows "Loading Grafana / failed to load its application files"
+   This is NOT a dashboard JSON issue — the browser is not loading Grafana's static JS/CSS.
+   Common cause: GF_SERVER_ROOT_URL / [server].root_url does not match how you open the site
+   (e.g. set to http://localhost:3000/ but you open http://137.131.53.98:3000/).
+   Docker (this repo):
+   - Create docker/.env with:  GRAFANA_ROOT_URL=http://YOUR_PUBLIC_IP:3000/
+   - Recreate Grafana:  cd docker && docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d --force-recreate grafana
+   - See: https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#root_url
+   Other: reverse proxy must pass Host / X-Forwarded-*; try http://IP:3000/login in a supported browser.
+
+2) Add Prometheus datasource (if missing)
+   - Connections -> Data sources -> Add Prometheus.
+   - URL: http://<prometheus-host>:9090  (reachable from Grafana server).
+   - Save & test.
+   - Set UID to "prometheus" OR on dashboard import pick your Prometheus datasource.
+
+3) Import JSON dashboards
+   - Dashboards -> New -> Import -> Upload JSON.
+   - Files in this folder:
+       dashboards/kafka-overview.json
+           -> "Oracle XStream CDC - Kafka Overview" (Kafka + CDC + connector panels)
+       dashboards/oracle-xstream-cdc-source-selfhosted.json
+           -> "Oracle XStream CDC Source (self-hosted)" (Connect JMX only)
+       dashboards/connect-cluster-metrics.json
+           -> "Kafka Connect cluster (self-hosted)" (worker rebalance, JVM)
+   - On import, choose your Prometheus data source for every panel.
+
+4) Confluent Cloud screenshots vs this repo
+   - Screenshots with "heracles-prod-amp", "lcc-*", "pcc-*" are Confluent Cloud metrics
+     (different labels and metric names). They cannot be cloned 1:1 on self-hosted
+     Prometheus unless you export those metrics yourself.
+   - The repo dashboards use broker JMX + Kafka Connect JMX (see monitoring/jmx/).
+
+5) After updating JMX rules (monitoring/jmx/kafka-connect.yml)
+   - Rebuild/restart Connect with the JMX agent and reload Prometheus targets.
+   - The file now whitelists debezium.confluent.oracle:* and maps Confluent Oracle XStream
+     connector metrics (see Confluent "Monitoring Oracle XStream CDC Source Connector")
+     plus kafka.producer outgoing-byte-rate / request-latency-avg / record-send-rate.
+   - If Prometheus shows no debezium_* metrics, verify the MBean ObjectName in JConsole
+     (spaces after commas differ by JVM). Adjust patterns in kafka-connect.yml if needed.
+
+6) API import (alternative)
+   - Run: monitoring/scripts/push-grafana-dashboards.sh
+   - Set: GRAFANA_URL, GRAFANA_USER, GRAFANA_PASS
