@@ -1,0 +1,10 @@
+-- Optional: pre-create TPCC when password profile requires special chars that HammerDB
+-- cannot embed in its unquoted CREATE USER SQL (ORA-00922 with ! # etc.).
+-- Run as SYSTEM connected to PDB XSTRPDB, then set hammerdb tpcc_pass to the SAME
+-- string (alphanumeric only) OR drop user and let HammerDB create — see HAMMERDB-RAC-LOAD.md
+--
+-- ALTER SESSION SET CONTAINER = XSTRPDB;
+-- CREATE USER tpcc IDENTIFIED BY "YourQuotedPasswordHere"
+--   DEFAULT TABLESPACE USERS TEMPORARY TABLESPACE TEMP
+--   QUOTA UNLIMITED ON USERS;
+-- GRANT CONNECT, RESOURCE, CREATE VIEW TO tpcc;

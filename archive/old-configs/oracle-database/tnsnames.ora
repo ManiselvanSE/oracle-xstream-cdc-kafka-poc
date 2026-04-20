@@ -1,0 +1,9 @@
+XSTRPDB = (DESCRIPTION=
+  (ADDRESS=(PROTOCOL=TCP)(HOST=racdb-scan.sub01061249390.xstrmconnectdb2.oraclevcn.com)(PORT=1521))
+  (CONNECT_DATA=(SERVICE_NAME=XSTRPDB.sub01061249390.xstrmconnectdb2.oraclevcn.com))
+)
+
+DB0312 = (DESCRIPTION=
+  (ADDRESS=(PROTOCOL=TCP)(HOST=racdb-scan.sub01061249390.xstrmconnectdb2.oraclevcn.com)(PORT=1521))
+  (CONNECT_DATA=(SERVICE_NAME=DB0312.sub01061249390.xstrmconnectdb2.oraclevcn.com))
+)

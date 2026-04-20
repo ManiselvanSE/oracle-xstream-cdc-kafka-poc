@@ -1,0 +1,11 @@
+# Oracle TNS - copy to tnsnames.ora and set HOST to your RAC SCAN
+# Used by: run-generate-heavy-cdc-load.sh, unlock-ordermgmt.sh
+XSTRPDB = (DESCRIPTION=
+  (ADDRESS=(PROTOCOL=TCP)(HOST=racdb-scan.your-domain.oraclevcn.com)(PORT=1521))
+  (CONNECT_DATA=(SERVICE_NAME=XSTRPDB.your-domain.oraclevcn.com))
+)
+
+DB0312 = (DESCRIPTION=
+  (ADDRESS=(PROTOCOL=TCP)(HOST=racdb-scan.your-domain.oraclevcn.com)(PORT=1521))
+  (CONNECT_DATA=(SERVICE_NAME=DB0312.your-domain.oraclevcn.com))
+)

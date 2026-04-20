@@ -1,0 +1,19 @@
+{
+  "transforms": "extractAfter,makeKeyItems,makeKeyHeader",
+  "transforms.extractAfter.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
+  "transforms.extractAfter.field": "after",
+  "transforms.extractAfter.predicate": "onlyItemsOrHeaderTable",
+  "transforms.makeKeyItems.type": "org.apache.kafka.connect.transforms.ValueToKey",
+  "transforms.makeKeyItems.fields": "TRANSFER_ID,TXN_SEQUENCE_NUMBER",
+  "transforms.makeKeyItems.predicate": "onlyItemsTable",
+  "transforms.makeKeyHeader.type": "org.apache.kafka.connect.transforms.ValueToKey",
+  "transforms.makeKeyHeader.fields": "TRANSFER_ID",
+  "transforms.makeKeyHeader.predicate": "onlyHeaderTable",
+  "predicates": "onlyItemsTable,onlyHeaderTable,onlyItemsOrHeaderTable",
+  "predicates.onlyItemsTable.type": "org.apache.kafka.connect.transforms.predicates.TopicNameMatches",
+  "predicates.onlyItemsTable.pattern": ".*\\.ORDERMGMT\\.MTX_TRANSACTION_ITEMS",
+  "predicates.onlyHeaderTable.type": "org.apache.kafka.connect.transforms.predicates.TopicNameMatches",
+  "predicates.onlyHeaderTable.pattern": ".*\\.ORDERMGMT\\.MTX_TRANSACTION_HEADER",
+  "predicates.onlyItemsOrHeaderTable.type": "org.apache.kafka.connect.transforms.predicates.TopicNameMatches",
+  "predicates.onlyItemsOrHeaderTable.pattern": ".*\\.ORDERMGMT\\.MTX_TRANSACTION_(ITEMS|HEADER)"
+}
