@@ -7,7 +7,7 @@ This guide provides step-by-step instructions to validate setup and execute a ma
 - Generate maximum CDC load on MTX_TRANSACTION_ITEMS table only
 - Measure Oracle redo generation, Kafka throughput, and replication lag
 - Capture Grafana dashboard metrics
-- Prepare results for Airtel client presentation
+- Prepare results for client presentation
 
 ---
 
@@ -35,7 +35,7 @@ This guide provides step-by-step instructions to validate setup and execute a ma
 Run the validation script from your Mac:
 
 ```bash
-cd /Users/maniselvank/Mani/customer/airtel/oracle-xstream-cdc-poc
+cd /Users/maniselvank/Mani/customer/poc-workspace/oracle-xstream-cdc-poc
 
 # Make scripts executable
 chmod +x validate-mtx-test-setup.sh
@@ -119,7 +119,7 @@ EXIT;
 #### Option A: Default Test (1 hour, 4 VUs)
 
 ```bash
-cd /Users/maniselvank/Mani/customer/airtel/oracle-xstream-cdc-poc
+cd /Users/maniselvank/Mani/customer/poc-workspace/oracle-xstream-cdc-poc
 
 ./run-mtx-load-test.sh
 ```

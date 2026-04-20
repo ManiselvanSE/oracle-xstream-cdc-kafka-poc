@@ -48,6 +48,10 @@ curl -s http://localhost:8083/connectors/oracle-xstream-rac-connector/status | j
 ./stop-all.sh
 ```
 
+## Reference scripts (metrics)
+
+- [scripts/reference/README.md](scripts/reference/README.md) — April 16 metrics collection and Grafana helpers (canonical paths match [oracle-xstream-cdc-kafka-poc on GitHub](https://github.com/ManiselvanSE/oracle-xstream-cdc-kafka-poc/tree/main/scripts/reference))
+
 ## Core Documentation
 
 - [System flow](docs/system-flow.md)

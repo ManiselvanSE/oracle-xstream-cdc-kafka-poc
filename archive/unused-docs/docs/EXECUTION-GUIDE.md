@@ -359,7 +359,7 @@ Apply:    XOUT ENABLED
 ## 2.1 Copy Project to VM (from Mac)
 
 ```bash
-cd /Users/maniselvank/Mani/customer/airtel
+cd /Users/maniselvank/Mani/customer/poc-workspace
 scp -i /path/to/your-ssh-key.pem -r oracle-xstream-cdc-poc opc@<vm-public-ip>:/home/opc/
 ```
 

@@ -1,4 +1,4 @@
--- Queries aligned with Airtel summary-style reporting (redo / archives).
+-- Queries aligned with client summary-style reporting (redo / archives).
 -- Run as a user with access to v$archived_log (e.g. SYSDBA) during or after HammerDB load.
 -- Pair with: HammerDB console output (tee mtx-run.log) and Kafka/Connect metrics (lag, EPS).
 

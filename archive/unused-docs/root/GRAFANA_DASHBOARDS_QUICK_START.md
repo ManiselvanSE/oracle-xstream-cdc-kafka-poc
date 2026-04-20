@@ -66,7 +66,7 @@ open http://137.131.53.98:3000/d/connector-health-status
 For the **Oracle DB Performance** dashboard, you need to deploy the Oracle exporter:
 
 ```bash
-cd /Users/maniselvank/Mani/customer/airtel/oracle-xstream-cdc-poc
+cd /Users/maniselvank/Mani/customer/poc-workspace/oracle-xstream-cdc-poc
 
 # 1. Create Oracle monitoring user
 sqlplus system/password@RACDB @monitoring/oracle-exporter/grants.sql

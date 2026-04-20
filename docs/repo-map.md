@@ -31,6 +31,10 @@ This file shows which parts of the repo are active for the PoC and which parts a
   - HammerDB runtime scripts (`hammerdb-mtx-*`, `hammerdb-tprocc-*`, `stop-hammerdb-load.sh`)
   - Validation/report SQL needed for active PoC
 - `monitoring/` (active observability stack)
+- `scripts/reference/`
+  - `collect-april16-test-metrics.sh` — MTX test metrics collection (edit env-specific values before use)
+  - `collect-grafana-metrics.sh` — Grafana/Prometheus snapshot helper for a time window
+  - `README.md` — run instructions and GitHub links
 - `docs/`
   - `system-flow.md`
   - `hammerdb-setup.md`

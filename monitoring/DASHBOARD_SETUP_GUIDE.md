@@ -146,7 +146,7 @@ scrape_configs:
 
 ```bash
 # 1. Create monitoring user in Oracle
-cd /Users/maniselvank/Mani/customer/airtel/oracle-xstream-cdc-poc
+cd /Users/maniselvank/Mani/customer/poc-workspace/oracle-xstream-cdc-poc
 sqlplus system/password@RACDB @monitoring/oracle-exporter/grants.sql
 
 # 2. Test connection
