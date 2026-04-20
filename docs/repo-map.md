@@ -38,6 +38,7 @@ This file shows which parts of the repo are active for the PoC and which parts a
 - `docs/`
   - `system-flow.md`
   - `hammerdb-setup.md`
+  - `MTX_14M_LOAD_REPRODUCTION_GUIDE.md` — deep dive: MTX load scripts, scaling, CDC latency context
   - `oracle-cdc-setup.md`
   - `validation-guide.md`
   - `performance-results.md`

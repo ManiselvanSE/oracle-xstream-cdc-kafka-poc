@@ -56,6 +56,7 @@ curl -s http://localhost:8083/connectors/oracle-xstream-rac-connector/status | j
 
 - [System flow](docs/system-flow.md)
 - [HammerDB setup](docs/hammerdb-setup.md)
+- [MTX high-volume load & reproduction (scripts, scaling, CDC latency)](docs/MTX_14M_LOAD_REPRODUCTION_GUIDE.md)
 - [Oracle CDC setup](docs/oracle-cdc-setup.md)
 - [Validation guide](docs/validation-guide.md)
 - [Performance results](docs/performance-results.md)

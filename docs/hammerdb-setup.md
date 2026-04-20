@@ -40,6 +40,8 @@ export HDB_MTX_PASS='<ordermgmt_password>'
 ./hammerdb-mtx-items-high-redo.sh
 ```
 
+For a **step-by-step** explanation of how the MTX scripts scale concurrency, how time-bound runs work, and how this relates to **CDC / ~200 ms latency** (vs HammerDB alone), see [MTX_14M_LOAD_REPRODUCTION_GUIDE.md](MTX_14M_LOAD_REPRODUCTION_GUIDE.md).
+
 ## Stop load
 
 ```bash
