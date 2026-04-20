@@ -349,7 +349,7 @@ services:
     image: grafana/grafana:10.2.0
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: <set-secure-password>
     ports: ["3000:3000"]
     volumes:
       - grafana-data:/var/lib/grafana

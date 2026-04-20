@@ -73,7 +73,7 @@ services:
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-}
       GF_SERVER_SERVE_FROM_SUB_PATH: "false"
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: Grafana@2026!
       GF_USERS_ALLOW_SIGN_UP: "false"
     ports:
       - "3000:3000"

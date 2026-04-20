@@ -332,6 +332,24 @@ TOTAL    56.00        43.40
 
 This SQL cross-check shows Oracle redo pressure; the **700-800 MB/s** claim is demonstrated from the streaming stack metrics (Prometheus/Grafana) over the short peak window.
 
+### 7.4 Captured Grafana evidence screenshots (live environment)
+
+The following screenshots were captured from dashboard UID `xstream-throughput-performance` for the absolute window `2026-04-16 00:20:00` to `01:00:00` IST:
+
+- **Lag panel evidence**: `docs/assets/grafana-lag-evidence.png`
+- **Bytes-in panel evidence**: `docs/assets/grafana-throughput-bytes-evidence.png`
+
+![Grafana streaming lag evidence](assets/grafana-lag-evidence.png)
+
+![Grafana bytes-in evidence](assets/grafana-throughput-bytes-evidence.png)
+
+Observed values in this capture:
+
+- `Current Streaming Lag (ms)` showed **`-1 ms`**
+- `Kafka Broker - CDC Topic Bytes In (B/s)` showed **`No data`**
+
+This means the current retained data for that panel/window does **not** show the historical `~200 ms` and `700-800 MB/s` peak profile. To capture those exact values as screenshots, run the load again with metrics active and take screenshots during the peak window.
+
 ---
 
 ## 8. End-to-end reproduction checklist (order matters)
